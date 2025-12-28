@@ -121,8 +121,8 @@ Você pode referenciar imagens nos templates em `public/img/` diretamente nas vi
 
 Exemplo de imagens incluídas (referência):
 
-![Template 2](/img/template2.png)
-![Template 5](/img/template5.png)
+![Template 2](public/img/template2.png)
+![Template 5](public/img/template5.png)
 
 > Observação: as imagens referenciadas estarão disponíveis se o servidor servir a pasta `public/` corretamente.
 
