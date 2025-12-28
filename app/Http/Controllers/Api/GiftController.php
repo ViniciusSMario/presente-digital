@@ -24,11 +24,21 @@ class GiftController extends Controller
 
         $gift = Gift::create(array_merge($data, ['user_id' => $request->user()->id ?? null, 'slug' => $slug, 'is_paid' => false]));
 
-        // handle uploads (photos/audio)
+        // handle uploads (photos/audio/video)
         if ($request->hasFile('media')) {
             foreach ($request->file('media') as $file) {
                 $path = $file->store('gifts', 'public');
-                $type = Str::startsWith($file->getMimeType(), 'audio') ? 'audio' : 'image';
+                $mimeType = $file->getMimeType();
+                
+                // Determine media type
+                if (Str::startsWith($mimeType, 'audio/')) {
+                    $type = 'audio';
+                } elseif (Str::startsWith($mimeType, 'video/')) {
+                    $type = 'video';
+                } else {
+                    $type = 'image';
+                }
+                
                 Media::create(['gift_id' => $gift->id, 'type' => $type, 'path' => $path]);
             }
         }

@@ -21,7 +21,7 @@ class PaymentController extends Controller
                         'currency' => 'brl',
                         'unit_amount' => $gift->price_cents ?: 1990, // Default R$ 19,90
                         'product_data' => [
-                            'name' => 'Presente Digital - ' . ($gift->title ?: 'Sem título'),
+                            'name' => 'PresenteiAI - ' . ($gift->title ?: 'Sem título'),
                             'description' => 'Presente digital personalizado',
                         ],
                     ],

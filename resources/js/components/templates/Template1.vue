@@ -59,70 +59,77 @@
           <div class="message-signature">— Com carinho</div>
         </article>
 
-        <!-- ================= CAROUSEL ================= -->
-        <section v-if="visualMedia.length" class="relative">
+        <!-- ================= IMAGES CAROUSEL ================= -->
+        <section v-if="imageMedia.length" class="relative">
           <div class="overflow-hidden rounded-2xl shadow-lg bg-black">
             <transition name="fade" mode="out-in">
-              <!-- Image -->
               <img
-                v-if="currentMedia.type === 'image'"
-                :key="currentMedia.id"
-                :src="mediaUrl(currentMedia.path)"
+                :key="currentImage.id"
+                :src="mediaUrl(currentImage.path)"
                 :alt="gift.title"
                 class="w-full max-h-[500px] object-contain"
                 loading="lazy"
-              />
-
-              <!-- Video -->
-              <video
-                v-else-if="currentMedia.type === 'video'"
-                :key="currentMedia.id"
-                :src="mediaUrl(currentMedia.path)"
-                controls
-                class="w-full max-h-[500px] object-contain"
               />
             </transition>
           </div>
 
           <!-- Navigation -->
           <button
-            @click="prev"
-            class="absolute left-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow"
+            v-if="imageMedia.length > 1"
+            @click="prevImage"
+            class="absolute left-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow z-10"
             aria-label="Anterior"
           >
             ◀
           </button>
 
           <button
-            @click="next"
-            class="absolute right-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow"
+            v-if="imageMedia.length > 1"
+            @click="nextImage"
+            class="absolute right-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow z-10"
             aria-label="Próximo"
           >
             ▶
           </button>
 
           <!-- Dots -->
-          <div class="flex justify-center gap-2 mt-4">
+          <div v-if="imageMedia.length > 1" class="flex justify-center gap-2 mt-4">
             <button
-              v-for="(m, i) in visualMedia"
+              v-for="(m, i) in imageMedia"
               :key="m.id"
-              @click="index = i"
+              @click="imageIndex = i"
               class="w-3 h-3 rounded-full transition"
-              :class="index === i ? 'bg-pink-500 scale-110' : 'bg-gray-300'"
-              aria-label="Ir para mídia"
+              :class="imageIndex === i ? 'bg-pink-500 scale-110' : 'bg-gray-300'"
+              aria-label="Ir para imagem"
             />
           </div>
         </section>
 
-        <!-- ================= AUDIOS ================= -->
-        <section v-if="audioMedia.length" class="space-y-4">
+        <!-- ================= VIDEO PLAYER ================= -->
+        <section v-if="videoMedia.length" class="space-y-6">
           <div
-            v-for="m in audioMedia"
-            :key="m.id"
-            class="bg-purple-50 rounded-2xl p-5 shadow"
+            v-for="video in videoMedia"
+            :key="video.id"
+            class="bg-gray-900 rounded-2xl overflow-hidden shadow-2xl"
           >
-            <audio :src="mediaUrl(m.path)" controls class="w-full" />
+            <video
+              :src="mediaUrl(video.path)"
+              controls
+              class="w-full max-h-[600px] object-contain"
+              preload="metadata"
+            >
+              Seu navegador não suporta vídeo.
+            </video>
           </div>
+        </section>
+
+        <!-- ================= AUDIO PLAYERS ================= -->
+        <section v-if="audioMedia.length" class="space-y-4">
+          <AudioPlayer
+            v-for="audio in audioMedia"
+            :key="audio.id"
+            :src="mediaUrl(audio.path)"
+          />
         </section>
       </section>
 
@@ -130,15 +137,25 @@
       <footer
         class="bg-gray-50 p-6 text-center text-sm text-gray-500"
       >
-        Feito com ❤️ no <span class="font-medium">Presente Digital</span>
+        Feito com ❤️ no <span class="font-medium">PresenteiAI</span>
       </footer>
     </main>
+    
+    <!-- Floating Audio Button -->
+    <FloatingAudioButton v-if="audioMedia.length" />
   </div>
 </template>
 
 <script>
+import AudioPlayer from '../AudioPlayer.vue'
+import FloatingAudioButton from '../FloatingAudioButton.vue'
+
 export default {
   name: 'GiftShow',
+  components: {
+    AudioPlayer,
+    FloatingAudioButton
+  },
   props: {
     gift: {
       type: Object,
@@ -147,30 +164,31 @@ export default {
   },
   data() {
     return {
-      index: 0,
+      imageIndex: 0,
     }
   },
   computed: {
-    visualMedia() {
-      return this.gift.media?.filter(m =>
-        ['image', 'video'].includes(m.type)
-      ) || []
+    imageMedia() {
+      return this.gift.media?.filter(m => m.type === 'image') || []
+    },
+    videoMedia() {
+      return this.gift.media?.filter(m => m.type === 'video') || []
     },
     audioMedia() {
       return this.gift.media?.filter(m => m.type === 'audio') || []
     },
-    currentMedia() {
-      return this.visualMedia[this.index]
+    currentImage() {
+      return this.imageMedia[this.imageIndex] || {}
     },
   },
   methods: {
-    next() {
-      this.index = (this.index + 1) % this.visualMedia.length
+    nextImage() {
+      this.imageIndex = (this.imageIndex + 1) % this.imageMedia.length
     },
-    prev() {
-      this.index =
-        (this.index - 1 + this.visualMedia.length) %
-        this.visualMedia.length
+    prevImage() {
+      this.imageIndex =
+        (this.imageIndex - 1 + this.imageMedia.length) %
+        this.imageMedia.length
     },
     mediaUrl(path) {
       return `/storage/${path}`
@@ -351,7 +369,4 @@ export default {
 .sparkle:nth-child(3) { animation-delay: 1s; }
 .sparkle:nth-child(4) { animation-delay: 1.5s; }
 
-audio::-webkit-media-controls-panel {
-  background-color: white;
-}
 </style>

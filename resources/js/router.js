@@ -11,8 +11,16 @@ import PaymentError from './components/PaymentError.vue'
 
 const routes = [
   { path: '/', component: LandingPage },
-  { path: '/dashboard', component: Dashboard },
-  { path: '/create', component: CreateGift },
+  { 
+    path: '/dashboard', 
+    component: Dashboard,
+    meta: { requiresAuth: true }
+  },
+  { 
+    path: '/create', 
+    component: CreateGift,
+    meta: { requiresAuth: true }
+  },
   { path: '/gifts/:slug', component: GiftView, props: true },
   { path: '/login', component: Login },
   { path: '/register', component: Register },
@@ -21,4 +29,31 @@ const routes = [
   { path: '/payment-error', component: PaymentError }
 ]
 
-export default createRouter({ history: createWebHistory(), routes })
+const router = createRouter({ history: createWebHistory(), routes })
+
+// Guard de navegação para rotas protegidas
+router.beforeEach(async (to, from, next) => {
+  if (to.meta.requiresAuth) {
+    const token = localStorage.getItem('api_token');
+    if (!token) {
+      next({ path: '/login', query: { redirect: to.fullPath } });
+      return;
+    }
+    
+    // Verificar se o token ainda é válido
+    try {
+      const axios = window.axios;
+      await axios.get('/api/user');
+      next();
+    } catch (error) {
+      // Token inválido - limpar e redirecionar
+      localStorage.removeItem('api_token');
+      localStorage.removeItem('user');
+      next({ path: '/login', query: { redirect: to.fullPath } });
+    }
+  } else {
+    next();
+  }
+});
+
+export default router

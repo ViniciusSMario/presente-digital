@@ -384,14 +384,6 @@ export default {
       }
     },
     async submit() {
-      // Double check authentication
-      const token = localStorage.getItem('api_token')
-      if (!token) {
-        alert('Você precisa estar logado para criar um presente.')
-        this.$router.push('/login?redirect=/create')
-        return
-      }
-
       this.loading = true
       try {
         const fd = new FormData()
@@ -401,14 +393,12 @@ export default {
         fd.append('price_cents', this.form.price_cents)
         this.files.forEach(f => fd.append('media[]', f))
 
-        const headers = { Authorization: `Bearer ${token}` }
-
-        // Create the gift
-        const res = await this.$axios.post('/api/gifts', fd, { headers })
+        // Create the gift (token será adicionado automaticamente pelo interceptor)
+        const res = await this.$axios.post('/api/gifts', fd)
         this.created = res.data.gift
 
         // Create Stripe checkout session
-        const checkoutRes = await this.$axios.post(`/api/gifts/${this.created.slug}/checkout`, {}, { headers })
+        const checkoutRes = await this.$axios.post(`/api/gifts/${this.created.slug}/checkout`, {})
         
         // Redirect to Stripe Checkout
         if (checkoutRes.data.url) {
@@ -416,10 +406,8 @@ export default {
         }
       } catch (error) {
         console.error('Error:', error)
-        if (error.response?.status === 401) {
-          alert('Sessão expirada. Faça login novamente.')
-          this.$router.push('/login?redirect=/create')
-        } else {
+        // O interceptor do axios já trata erros 401
+        if (error.response?.status !== 401) {
           alert('Erro ao criar presente. Tente novamente.')
         }
         this.loading = false

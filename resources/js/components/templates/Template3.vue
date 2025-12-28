@@ -40,71 +40,75 @@
             </div>
             
             <!-- Media section -->
-            <div v-if="visualMedia.length || audioMedia.length" class="space-y-6">
+            <div v-if="imageMedia.length || videoMedia.length || audioMedia.length" class="space-y-6">
               <h2 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 md:mb-6 text-center">Momentos Especiais</h2>
               
-              <!-- Carousel -->
-              <div v-if="visualMedia.length" class="relative">
+              <!-- Images Carousel -->
+              <div v-if="imageMedia.length" class="relative">
                 <div class="overflow-hidden rounded-xl shadow-lg bg-gradient-to-br from-blue-100 to-cyan-100">
                   <transition name="fade" mode="out-in">
                     <img 
-                      v-if="currentMedia.type === 'image'"
-                      :key="currentMedia.id"
-                      :src="`/storage/${currentMedia.path}`" 
+                      :key="currentImage.id"
+                      :src="`/storage/${currentImage.path}`" 
                       class="w-full h-56 sm:h-64 md:h-80 object-cover"
                       :alt="gift.title"
-                    />
-                    <video 
-                      v-else-if="currentMedia.type === 'video'"
-                      :key="currentMedia.id"
-                      :src="`/storage/${currentMedia.path}`" 
-                      controls 
-                      class="w-full h-56 sm:h-64 md:h-80 object-contain bg-black"
                     />
                   </transition>
                 </div>
                 
                 <!-- Navigation -->
                 <button
-                  v-if="visualMedia.length > 1"
-                  @click="prev"
-                  class="absolute left-3 top-1/2 -translate-y-1/2 bg-white hover:bg-blue-50 rounded-full p-3 shadow-lg transition"
+                  v-if="imageMedia.length > 1"
+                  @click="prevImage"
+                  class="absolute left-3 top-1/2 -translate-y-1/2 bg-white hover:bg-blue-50 rounded-full p-3 shadow-lg transition z-10"
                 >
                   ◀
                 </button>
                 <button
-                  v-if="visualMedia.length > 1"
-                  @click="next"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 bg-white hover:bg-blue-50 rounded-full p-3 shadow-lg transition"
+                  v-if="imageMedia.length > 1"
+                  @click="nextImage"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 bg-white hover:bg-blue-50 rounded-full p-3 shadow-lg transition z-10"
                 >
                   ▶
                 </button>
                 
                 <!-- Dots -->
-                <div v-if="visualMedia.length > 1" class="flex justify-center gap-2 mt-4">
+                <div v-if="imageMedia.length > 1" class="flex justify-center gap-2 mt-4">
                   <button
-                    v-for="(m, i) in visualMedia"
+                    v-for="(m, i) in imageMedia"
                     :key="m.id"
-                    @click="index = i"
+                    @click="imageIndex = i"
                     class="w-3 h-3 rounded-full transition"
-                    :class="index === i ? 'bg-blue-600 scale-110' : 'bg-blue-200'"
+                    :class="imageIndex === i ? 'bg-blue-600 scale-110' : 'bg-blue-200'"
                   />
                 </div>
               </div>
               
-              <!-- Audio -->
-              <div v-if="audioMedia.length" class="space-y-4">
+              <!-- Video Players -->
+              <div v-if="videoMedia.length" class="space-y-6">
                 <div 
-                  v-for="m in audioMedia" 
-                  :key="m.id"
-                  class="bg-gradient-to-r from-blue-100 to-cyan-100 rounded-xl p-6 shadow-md"
+                  v-for="video in videoMedia" 
+                  :key="video.id"
+                  class="bg-gradient-to-r from-blue-100 to-cyan-100 rounded-xl overflow-hidden shadow-md"
                 >
-                  <div class="flex items-center mb-3">
-                    <div class="text-3xl mr-3">🎼</div>
-                    <p class="text-lg font-medium text-gray-700">Mensagem de Áudio</p>
-                  </div>
-                  <audio :src="`/storage/${m.path}`" controls class="w-full"></audio>
+                  <video
+                    :src="`/storage/${video.path}`"
+                    controls
+                    class="w-full max-h-[600px] object-contain bg-black"
+                    preload="metadata"
+                  >
+                    Seu navegador não suporta vídeo.
+                  </video>
                 </div>
+              </div>
+              
+              <!-- Audio Players -->
+              <div v-if="audioMedia.length" class="space-y-4">
+                <AudioPlayer
+                  v-for="audio in audioMedia"
+                  :key="audio.id"
+                  :src="`/storage/${audio.path}`"
+                />
               </div>
             </div>
           </div>
@@ -112,36 +116,49 @@
         
         <!-- Footer -->
         <div class="bg-gradient-to-r from-blue-50 to-cyan-50 p-6 text-center border-t border-blue-100">
-          <p class="text-gray-600 font-medium">💙 Presente Digital 💙</p>
+          <p class="text-gray-600 font-medium">💙 PresenteiAI 💙</p>
         </div>
       </div>
     </div>
+    
+    <!-- Floating Audio Button -->
+    <FloatingAudioButton v-if="audioMedia.length" />
   </div>
 </template>
 
 <script>
+import AudioPlayer from '../AudioPlayer.vue'
+import FloatingAudioButton from '../FloatingAudioButton.vue'
+
 export default {
+  components: {
+    AudioPlayer,
+    FloatingAudioButton
+  },
   props: ['gift'],
   data() {
-    return { index: 0 }
+    return { imageIndex: 0 }
   },
   computed: {
-    visualMedia() {
-      return this.gift.media?.filter(m => ['image', 'video'].includes(m.type)) || []
+    imageMedia() {
+      return this.gift.media?.filter(m => m.type === 'image') || []
+    },
+    videoMedia() {
+      return this.gift.media?.filter(m => m.type === 'video') || []
     },
     audioMedia() {
       return this.gift.media?.filter(m => m.type === 'audio') || []
     },
-    currentMedia() {
-      return this.visualMedia[this.index]
+    currentImage() {
+      return this.imageMedia[this.imageIndex] || {}
     }
   },
   methods: {
-    next() {
-      this.index = (this.index + 1) % this.visualMedia.length
+    nextImage() {
+      this.imageIndex = (this.imageIndex + 1) % this.imageMedia.length
     },
-    prev() {
-      this.index = (this.index - 1 + this.visualMedia.length) % this.visualMedia.length
+    prevImage() {
+      this.imageIndex = (this.imageIndex - 1 + this.imageMedia.length) % this.imageMedia.length
     }
   }
 }

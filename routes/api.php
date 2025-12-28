@@ -12,6 +12,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/gifts/{slug}', [GiftController::class, 'show']);
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', [AuthController::class, 'user']);
     Route::get('/user/gifts', [GiftController::class, 'index']);
     Route::post('/gifts', [GiftController::class, 'store']);
     Route::post('/gifts/{gift}/checkout', [PaymentController::class, 'checkout']);

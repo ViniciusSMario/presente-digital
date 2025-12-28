@@ -4,7 +4,7 @@
       <div class="flex h-16 items-center justify-between">
         <div class="flex items-center">
           <router-link to="/" class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-            Presente<span class="text-blue-600 dark:text-blue-400">Digital</span>
+            Presentei<span class="text-blue-600 dark:text-blue-400">AI</span>
           </router-link>
         </div>
         
@@ -76,10 +76,8 @@ export default {
       mobileMenuOpen: false
     } 
   },
-  mounted() { 
-    try { 
-      this.user = JSON.parse(localStorage.getItem('user')) 
-    } catch(e){}
+  async mounted() { 
+    await this.checkAuth()
     
     // Check initial theme
     this.isDark = localStorage.getItem('theme') === 'dark' || 
@@ -88,8 +86,59 @@ export default {
     if (this.isDark) {
       document.documentElement.classList.add('dark')
     }
+    
+    // Escutar eventos de mudança de autenticação
+    window.addEventListener('auth-changed', this.handleAuthChange)
+    
+    // Escutar mudanças no localStorage (para sincronizar entre abas)
+    window.addEventListener('storage', this.handleStorageChange)
+  },
+  beforeUnmount() {
+    // Limpar event listeners
+    window.removeEventListener('auth-changed', this.handleAuthChange)
+    window.removeEventListener('storage', this.handleStorageChange)
   },
   methods: {
+    async checkAuth() {
+      // Verificar autenticação com o backend
+      const token = localStorage.getItem('api_token');
+      if (token) {
+        try {
+          const res = await this.$axios.get('/api/user');
+          if (res.data.user) {
+            this.user = res.data.user;
+            localStorage.setItem('user', JSON.stringify(res.data.user));
+          }
+        } catch (e) {
+          // Token inválido ou expirado - limpar dados
+          localStorage.removeItem('api_token');
+          localStorage.removeItem('user');
+          this.user = null;
+        }
+      } else {
+        // Tentar ler do localStorage como fallback
+        try { 
+          this.user = JSON.parse(localStorage.getItem('user')) 
+        } catch(e){
+          this.user = null;
+        }
+      }
+    },
+    handleAuthChange(event) {
+      // Atualizar usuário quando login/registro acontece
+      if (event.detail?.user) {
+        this.user = event.detail.user
+        localStorage.setItem('user', JSON.stringify(event.detail.user))
+      } else if (event.detail?.action === 'logout') {
+        this.user = null
+      }
+    },
+    handleStorageChange(event) {
+      // Sincronizar quando localStorage muda em outra aba
+      if (event.key === 'api_token' || event.key === 'user') {
+        this.checkAuth()
+      }
+    },
     toggleTheme() {
       this.isDark = !this.isDark
       if (this.isDark) {
@@ -104,6 +153,12 @@ export default {
       localStorage.removeItem('api_token');
       localStorage.removeItem('user');
       this.user = null;
+      
+      // Disparar evento para notificar outros componentes
+      window.dispatchEvent(new CustomEvent('auth-changed', { 
+        detail: { action: 'logout' } 
+      }))
+      
       this.$router.push('/');
     }
   }

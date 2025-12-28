@@ -387,7 +387,7 @@
       <div class="max-w-7xl mx-auto">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           <div>
-            <h3 class="text-white font-bold text-lg mb-4">Presente Digital</h3>
+            <h3 class="text-white font-bold text-lg mb-4">PresenteiAI</h3>
             <p class="text-sm leading-relaxed">
               Crie experiências digitais memoráveis para quem você ama.
             </p>
@@ -418,7 +418,7 @@
           </div>
         </div>
         <div class="pt-8 border-t border-slate-800 text-center text-sm">
-          <p>© 2025 Presente Digital. Todos os direitos reservados.</p>
+          <p>© 2025 PresenteiAI. Todos os direitos reservados.</p>
         </div>
       </div>
     </footer>

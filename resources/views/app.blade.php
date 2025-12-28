@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Presente Digital - Crie presentes digitais personalizados</title>
+    <title>PresenteiAI - Crie presentes digitais personalizados</title>
     <script src="https://js.stripe.com/v3/"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
   </head>

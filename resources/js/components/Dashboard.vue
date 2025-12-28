@@ -77,22 +77,12 @@ export default {
     }
   },
   async mounted(){
-    const token = localStorage.getItem('api_token')
-    if (!token) {
-      this.$router.push('/login')
-      return
-    }
-    
     try{
-      const res = await this.$axios.get('/api/user/gifts', { 
-        headers: { Authorization: `Bearer ${token}` } 
-      })
+      const res = await this.$axios.get('/api/user/gifts')
       this.gifts = res.data.gifts || []
     }catch(e){
       console.error('Error loading gifts:', e)
-      if (e.response?.status === 401) {
-        this.$router.push('/login')
-      }
+      // O interceptor do axios já trata erros 401
     } finally {
       this.loading = false
     }

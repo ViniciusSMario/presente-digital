@@ -1,6 +1,6 @@
-# Presente Digital
+# PresenteiAI
 
-Presente Digital é uma plataforma para criar presentes digitais personalizados (fotos, vídeos, mensagens e músicas) com templates profissionais.
+PresenteiAI é uma plataforma para criar presentes digitais personalizados (fotos, vídeos, mensagens e músicas) com templates profissionais.
 
 Este repositório contém o backend Laravel e a interface frontend em Vue 3 com Tailwind CSS e Vite.
 
@@ -51,7 +51,7 @@ php artisan key:generate
 4. Configure o `.env` (exemplo mínimo)
 
 ```
-APP_NAME=PresenteDigital
+APP_NAME=PresenteiAI
 APP_URL=http://localhost:8000
 DB_CONNECTION=sqlite
 DB_DATABASE=/full/path/to/database.sqlite  # ou use MySQL/Postgres config
