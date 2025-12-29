@@ -213,6 +213,11 @@ export default {
   margin-bottom: 2rem;
   padding: 0 1rem;
   filter: drop-shadow(2px 2px 4px rgba(190, 18, 60, 0.2));
+  /* ensure title wraps and does not overflow on narrow screens */
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-all;
+  hyphens: auto;
 }
 
 .vintage-letter {
@@ -252,6 +257,9 @@ export default {
   text-align: center;
   margin: 2rem 0;
   letter-spacing: 0.02em;
+  /* allow very long words to break inside the message area */
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .letter-closing {

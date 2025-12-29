@@ -197,6 +197,11 @@ export default {
   line-height: 1.3;
   margin-bottom: 2rem;
   text-shadow: 2px 4px 12px rgba(0, 0, 0, 0.3);
+  /* prevent long, unbroken text from overflowing */
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-all;
+  hyphens: auto;
 }
 
 .botanical-message-card {
@@ -241,6 +246,9 @@ export default {
   white-space: pre-line;
   text-align: center;
   margin: 1.5rem 0;
+  /* ensure long messages wrap inside the card */
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .botanical-flourish {

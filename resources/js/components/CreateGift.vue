@@ -130,12 +130,19 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
                 <div class="mt-4">
-                  <label for="file-upload" class="cursor-pointer rounded-lg bg-purple-600 px-6 py-3 text-sm font-semibold text-white hover:bg-purple-500 inline-block">
-                    Escolher Arquivos
-                    <input id="file-upload" type="file" multiple accept="image/*,audio/*,video/*" @change="handleFiles" class="sr-only" />
-                  </label>
-                </div>
-                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">PNG, JPG, MP3, MP4 até 10MB cada</p>
+                  <label
+                    for="file-upload"
+                    :class="[files.length >= maxFiles ? 'cursor-not-allowed opacity-70 pointer-events-none' : 'cursor-pointer', 'rounded-lg px-6 py-3 text-sm font-semibold text-white inline-block']"
+                    :style="files.length >= maxFiles ? { backgroundColor: '#7c3aed' } : {}"
+                    class="inline-block"
+                  >
+                        <span class="bg-purple-600 px-4 py-2 rounded" :class="files.length >= maxFiles ? 'bg-purple-500' : 'bg-purple-600 hover:bg-purple-500'">Escolher Arquivos</span>
+                        <input id="file-upload" type="file" multiple accept="image/*,audio/*,video/*" @change="handleFiles" class="sr-only" :disabled="files.length >= maxFiles" />
+                      </label>
+                    </div>
+                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">PNG, JPG, MP3, MP4 até 10MB cada • Máximo 50MB total</p>
+                    <p class="mt-1 text-sm font-semibold" :class="totalSize > maxTotalSize * 0.8 ? 'text-orange-600' : 'text-gray-700 dark:text-gray-300'"><strong>{{ files.length }}/{{ maxFiles }}</strong> arquivos • {{ formatSize(totalSize) }}/{{ formatSize(maxTotalSize) }}</p>
+                    <p v-if="uploadError" class="mt-1 text-sm text-red-600 font-semibold">{{ uploadError }}</p>
               </div>
             </div>
           </div>
@@ -147,18 +154,34 @@
               <div 
                 v-for="(file, index) in files" 
                 :key="index"
-                class="relative group rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-700 p-3 hover:border-purple-400 dark:hover:border-purple-500 transition-all"
+                :class="[
+                  'relative group rounded-lg border-2 p-3 transition-all',
+                  file.error 
+                    ? 'border-red-500 bg-red-50 dark:bg-red-900/20' 
+                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-700 hover:border-purple-400 dark:hover:border-purple-500'
+                ]"
               >
+                <!-- Error badge -->
+                <div v-if="file.error" class="absolute -top-2 -left-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold z-10">
+                  !
+                </div>
+                
                 <div class="aspect-square bg-gray-100 dark:bg-slate-600 rounded-lg flex items-center justify-center mb-2 overflow-hidden">
                   <img v-if="file.type.startsWith('image/')" :src="getFilePreview(file)" class="w-full h-full object-cover" />
                   <div v-else class="text-4xl">
                     {{ file.type.startsWith('audio/') ? '🎵' : '🎥' }}
                   </div>
                 </div>
-                <p class="text-xs text-gray-600 dark:text-gray-400 truncate">{{ file.name }}</p>
+                <p class="text-xs truncate" :class="file.error ? 'text-red-700 dark:text-red-400 font-semibold' : 'text-gray-600 dark:text-gray-400'">{{ file.name }}</p>
+                <p v-if="file.error" class="text-[10px] text-red-600 dark:text-red-400 mt-1 leading-tight">{{ file.error }}</p>
+                <p v-else class="text-[10px] text-gray-500 dark:text-gray-400 mt-1">{{ formatSize(file.size) }}</p>
+                
                 <button 
                   @click="removeFile(index)"
-                  class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  :class="[
+                    'absolute -top-2 -right-2 text-white rounded-full w-6 h-6 flex items-center justify-center transition-opacity',
+                    file.error ? 'bg-red-600 opacity-100' : 'bg-red-500 opacity-0 group-hover:opacity-100'
+                  ]"
                 >
                   ×
                 </button>
@@ -305,6 +328,10 @@ export default {
         { id: 4, value: 'template4', name: 'Template 4', icon: '🌟', gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', image: '/img/template4.png' },
         { id: 5, value: 'template5', name: 'Template 5', icon: '🎁', gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', image: '/img/template5.png' }
       ],
+      maxFiles: 10,
+      maxFileSize: 10 * 1024 * 1024, // 10MB per file
+      maxTotalSize: 50 * 1024 * 1024, // 50MB total
+      uploadError: '',
       files: [],
       filePreviewUrls: {},
       created: null,
@@ -316,10 +343,17 @@ export default {
     selectedTemplate() {
       return this.templates.find(t => t.value === this.form.template)
     },
+    totalSize() {
+      return this.files.reduce((sum, fileObj) => sum + fileObj.size, 0)
+    },
     canProceed() {
       if (this.currentStep === 0) return true // template selection
       if (this.currentStep === 1) return this.form.title && this.form.message
-      if (this.currentStep === 2) return true // media is optional
+      if (this.currentStep === 2) {
+        // Check if any files have errors
+        const hasInvalidFiles = this.files.some(f => f.error)
+        return !hasInvalidFiles && this.totalSize <= this.maxTotalSize
+      }
       return true
     }
   },
@@ -351,14 +385,74 @@ export default {
     },
     handleFiles(e) {
       const newFiles = Array.from(e.target.files)
-      this.files = [...this.files, ...newFiles]
+      const spaceLeft = this.maxFiles - this.files.length
       
+      if (spaceLeft <= 0) {
+        this.uploadError = `Você já atingiu o limite de ${this.maxFiles} arquivos. Remova alguns para adicionar novos.`
+        return
+      }
+
+      // Accept all files up to the limit, but mark invalid ones
+      const filesToAdd = newFiles.slice(0, spaceLeft).map(file => {
+        const fileObj = {
+          file: file,
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          error: null
+        }
+
+        // Check individual file size
+        if (file.size > this.maxFileSize) {
+          fileObj.error = `Arquivo muito grande (${this.formatSize(file.size)}). Máximo: 10MB`
+        }
+
+        return fileObj
+      })
+
+      // Add files to the list
+      this.files = [...this.files, ...filesToAdd]
+
+      // Check total size and mark files if exceeded
+      this.validateTotalSize()
+
       // Create preview URLs for images
-      newFiles.forEach(file => {
-        if (file.type.startsWith('image/')) {
-          this.filePreviewUrls[file.name] = URL.createObjectURL(file)
+      filesToAdd.forEach(fileObj => {
+        if (fileObj.type.startsWith('image/')) {
+          this.filePreviewUrls[fileObj.name] = URL.createObjectURL(fileObj.file)
         }
       })
+
+      // Update error message
+      this.updateErrorMessage()
+    },
+    validateTotalSize() {
+      const currentTotal = this.totalSize
+      if (currentTotal > this.maxTotalSize) {
+        // Mark files that push us over the limit
+        let accumulated = 0
+        this.files.forEach(fileObj => {
+          accumulated += fileObj.size
+          if (accumulated > this.maxTotalSize && !fileObj.error) {
+            fileObj.error = 'Tamanho total excede 50MB. Remova este ou outros arquivos.'
+          }
+        })
+      } else {
+        // Clear total size errors if within limit
+        this.files.forEach(fileObj => {
+          if (fileObj.error && fileObj.error.includes('Tamanho total excede')) {
+            fileObj.error = null
+          }
+        })
+      }
+    },
+    updateErrorMessage() {
+      const invalidFiles = this.files.filter(f => f.error)
+      if (invalidFiles.length > 0) {
+        this.uploadError = `${invalidFiles.length} arquivo(s) marcado(s) em vermelho deve(m) ser removido(s).`
+      } else {
+        this.uploadError = ''
+      }
     },
     removeFile(index) {
       const file = this.files[index]
@@ -367,9 +461,20 @@ export default {
         delete this.filePreviewUrls[file.name]
       }
       this.files.splice(index, 1)
+      
+      // Revalidate after removal
+      this.validateTotalSize()
+      this.updateErrorMessage()
     },
-    getFilePreview(file) {
-      return this.filePreviewUrls[file.name]
+    getFilePreview(fileObj) {
+      return this.filePreviewUrls[fileObj.name]
+    },
+    formatSize(bytes) {
+      if (bytes === 0) return '0 B'
+      const k = 1024
+      const sizes = ['B', 'KB', 'MB', 'GB']
+      const i = Math.floor(Math.log(bytes) / Math.log(k))
+      return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
     },
     openPreview(template) {
       this.previewTemplate = template
@@ -391,7 +496,7 @@ export default {
         fd.append('message', this.form.message)
         fd.append('template', this.form.template)
         fd.append('price_cents', this.form.price_cents)
-        this.files.forEach(f => fd.append('media[]', f))
+        this.files.forEach(fileObj => fd.append('media[]', fileObj.file))
 
         // Create the gift (token será adicionado automaticamente pelo interceptor)
         const res = await this.$axios.post('/api/gifts', fd)
@@ -443,7 +548,13 @@ export default {
   },
   beforeUnmount() {
     // Clean up preview URLs
-    Object.values(this.filePreviewUrls).forEach(url => URL.revokeObjectURL(url))
+    Object.values(this.filePreviewUrls).forEach(url => {
+      try {
+        URL.revokeObjectURL(url)
+      } catch (e) {
+        // Ignore errors
+      }
+    })
   }
 }
 </script>

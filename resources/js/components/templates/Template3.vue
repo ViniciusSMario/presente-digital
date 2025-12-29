@@ -185,6 +185,11 @@ export default {
   letter-spacing: -0.02em;
   line-height: 1.1;
   margin-bottom: 2rem;
+  /* Robust wrapping rules to prevent overflow on narrow screens */
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-all;
+  hyphens: auto;
 }
 
 .minimal-ornament {
@@ -237,6 +242,9 @@ export default {
   white-space: pre-line;
   font-weight: 400;
   letter-spacing: 0.01em;
+  /* wrap very long strings and prevent overflow */
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .wave-container {

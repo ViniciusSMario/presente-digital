@@ -186,6 +186,11 @@ export default {
   padding: 0.75rem 1.5rem;
   line-height: 1.2;
   transform: rotate(-1deg);
+  /* Robust wrapping rules to prevent overflow on narrow screens */
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-all;
+  hyphens: auto;
 }
 
 .sticky-note-text {
@@ -196,6 +201,9 @@ export default {
   white-space: pre-line;
   text-align: left;
   padding: 0 1rem;
+  /* ensure long messages wrap correctly */
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .sticky-note-footer {

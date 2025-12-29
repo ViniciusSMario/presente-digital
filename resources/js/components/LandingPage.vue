@@ -13,7 +13,7 @@
           
           <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 sm:mb-8 leading-tight">
             Transforme memórias em
-            <span class="block text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-rose-400">
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-rose-400">
               experiências inesquecíveis
             </span>
           </h1>
@@ -39,6 +39,12 @@
             >
               Ver templates
             </a>
+          </div>
+          <!-- Price badge -->
+          <div class="mt-6">
+            <span class="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-white/10 text-sm font-semibold text-white border border-white/10">
+              A partir de <span class="text-lg font-bold">R$9,90</span> por presente
+            </span>
           </div>
           
           <div class="mt-16 pt-16 border-t border-white/10">
@@ -357,6 +363,10 @@
             </svg>
           </router-link>
         </div>
+        <!-- Price note for CTA -->
+        <div class="text-center mb-10">
+          <span class="inline-block px-3 py-2 bg-white/10 text-sm text-white rounded-full border border-white/10">Todos os presentes: <strong>R$9,90</strong></span>
+        </div>
         
         <!-- Trust indicators -->
         <div class="flex flex-wrap justify-center items-center gap-8 pt-8 border-t border-white/10">
@@ -387,7 +397,7 @@
       <div class="max-w-7xl mx-auto">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           <div>
-            <h3 class="text-white font-bold text-lg mb-4">PresenteiAI</h3>
+            <h3 class="text-white font-bold text-lg mb-4">Presente Digital</h3>
             <p class="text-sm leading-relaxed">
               Crie experiências digitais memoráveis para quem você ama.
             </p>
@@ -418,7 +428,7 @@
           </div>
         </div>
         <div class="pt-8 border-t border-slate-800 text-center text-sm">
-          <p>© 2025 PresenteiAI. Todos os direitos reservados.</p>
+          <p>© 2025 Presente Digital. Todos os direitos reservados.</p>
         </div>
       </div>
     </footer>

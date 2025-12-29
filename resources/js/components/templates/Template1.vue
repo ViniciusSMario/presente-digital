@@ -219,6 +219,11 @@ export default {
   margin-bottom: 1.5rem;
   animation: fade-in-up 0.8s ease-out 0.3s backwards;
   text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+  /* Robust wrapping rules to prevent overflow on small screens */
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-all; /* aggressive fallback for very long strings */
+  hyphens: auto;
 }
 
 .luxury-divider {
@@ -250,6 +255,9 @@ export default {
   font-style: italic;
   text-align: center;
   margin: 1rem 0;
+  /* Ensure long strings wrap and don't overflow containers */
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .quote-mark {
