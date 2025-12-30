@@ -50,7 +50,19 @@ class GiftController extends Controller
     public function show($slug)
     {
         $gift = Gift::where('slug', $slug)->with('media')->firstOrFail();
-        return response()->json(['gift' => $gift]);
+
+        // If the gift hasn't been paid, don't expose the template or media
+        if (! ($gift->paid ?? false)) {
+            $gift->template = null;
+            $gift->setRelation('media', collect([]));
+            return response()->json([
+                'gift' => $gift,
+                'paid' => false,
+                'message' => 'Presente não pago'
+            ]);
+        }
+
+        return response()->json(['gift' => $gift, 'paid' => true]);
     }
 
     public function index(Request $request)
